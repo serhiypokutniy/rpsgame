@@ -23,7 +23,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
       trigger('changeColorAnimation', [
           state('DEFAULT', style({ color: '#3f51b5' })),
           state('ACTIVE', style({ color: 'black' })),
-          transition('* => *', animate('0.3s ease-in-out')),
+          transition('* => *', animate('0.8s ease-in-out')),
     ])
   ]
 })

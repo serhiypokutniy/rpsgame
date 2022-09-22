@@ -25,7 +25,7 @@ public class Game {
     private Game(Choice playerChoice, Player player){
         this.playerChoice = playerChoice;
         if(playerChoice != null) {
-            computerChoice = Choice.values()[RANDOM.nextInt(Choice.values().length)];
+            computerChoice = randomChoice();
             winner = whoWins(computerChoice, playerChoice);
             if (winner == Winner.COMPUTER) {
                 player.setLastLostScore(player.getLastLostScore() + 1);
@@ -42,6 +42,10 @@ public class Game {
         this.player = player;
     }
 
+    private static Choice randomChoice(){
+        return Choice.values()[RANDOM.nextInt(Choice.values().length)];
+    }
+
     public static Game from(Player player){
         return new Game(null, player);
     }
@@ -50,6 +54,7 @@ public class Game {
         return new Game(Choice.valueOf(playerChoice.toUpperCase()), player);
     }
 
+    /** @return computes the winner based on his choice  */
     public static Winner whoWins(Choice pc, Choice user) {
         if(pc == user) {
             return Winner.TIE;

@@ -81,6 +81,7 @@ class SpsGameApplicationTests {
         executeLoadTest();
     }
 
+    /** Utility for load test which is executed manually */
     private static void executeLoadTest() {
         var client = HttpClient.newHttpClient();
         var request = HttpRequest.newBuilder(URI.create("http://localhost:8080/api/init?playerId=3242332"))

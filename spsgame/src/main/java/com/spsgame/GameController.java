@@ -3,7 +3,6 @@ package com.spsgame;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.spsgame.entity.Game;
 import com.spsgame.entity.Player;
-import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,7 @@ public class GameController {
     @Timed(value = "init.time", description = "Time for the initialization")
     public Game initGame(@RequestParam String playerId){
         return execute(() -> {
+            log.debug("Executing init function for {}", playerId);
             Player player = findOrCreatePlayer(playerId);
             return Game.from(player);
         });
@@ -50,6 +50,7 @@ public class GameController {
     @Timed(value = "play.time", description = "Time required to complete the game")
     public Game play(@RequestParam String playerId, @RequestParam String playerChoice) {
         return execute(() -> {
+            log.debug("Executing play function for player {} with choice {}", playerId, playerChoice);
             Player player = findOrCreatePlayer(playerId);
             Game game = Game.from(playerChoice, player);
             playerRepository.save(player);
@@ -58,10 +59,11 @@ public class GameController {
     }
 
     @PostMapping(path = "reset", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Counted(value = "reset.counter", description = "Time reset function called")
+    @Timed(value = "reset.time", description = "Time required for resetting the score")
     @HystrixCommand(groupKey = HYSTRIX_GROUP)
     public void reset(@RequestParam String playerId) {
         execute(() -> {
+            log.debug("Executing reset function for {}", playerId);
             Player player = findOrCreatePlayer(playerId);
             player.setLastLostScore(0);
             player.setLastWonScore(0);
@@ -70,9 +72,11 @@ public class GameController {
         });
     }
 
+    /** Loads computationally intensive values to the cache. These values can later be read by the application. */
     @Scheduled(initialDelay = 0, fixedDelay = 10_000)
     public void fetchStatistics() {
         try {
+            log.debug("Loading values to the cache");
             redisTemplate.opsForValue().set(TOTAL_GAMES_CACHING_ID, playerRepository.totalGames());
             redisTemplate.opsForValue().set(DISTINCT_PLAYERS_CACHING_ID, playerRepository.distinctPlayers());
         } catch(Exception ex){
@@ -88,6 +92,7 @@ public class GameController {
         return template;
     }
 
+    /** Encapsulates the code inside of try and catch block */
     private<T> T execute(Supplier<T> supplier){
         try {
             return supplier.get();
@@ -96,14 +101,19 @@ public class GameController {
         }
     }
 
+    /** @return Find an existing player using the provided id or creates a new one */
     private Player findOrCreatePlayer(String playerId){
-        if(playerId == null || playerId.isEmpty()){
-            throw new IllegalArgumentException("No session id provided for using as user id");
+        if(playerId != null && !playerId.isEmpty()){
+            Player player = playerRepository.findById(playerId)
+                    .orElseGet(() -> {
+                        log.debug("User {} does not exist, creating a new user", playerId);
+                        return playerRepository.save(Player.builder().playerId(playerId).lastUpdated(Instant.now()).build());
+                    });
+            //Set computationally intensive values from cache
+            player.setPlayedByAll((Integer) redisTemplate.opsForValue().get(TOTAL_GAMES_CACHING_ID));
+            player.setDistinctPlayers((Integer) redisTemplate.opsForValue().get(DISTINCT_PLAYERS_CACHING_ID));
+            return player;
         }
-        Player player = playerRepository.findById(playerId)
-                .orElseGet(() -> playerRepository.save(Player.builder().playerId(playerId).lastUpdated(Instant.now()).build()));
-        player.setPlayedByAll((Integer) redisTemplate.opsForValue().get(TOTAL_GAMES_CACHING_ID));
-        player.setDistinctPlayers((Integer) redisTemplate.opsForValue().get(DISTINCT_PLAYERS_CACHING_ID));
-        return player;
+        throw new IllegalArgumentException("No session id provided for using as user id");
     }
 }
