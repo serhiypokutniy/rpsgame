@@ -13,7 +13,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.util.Map;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SpsGameApplicationTests {
@@ -47,9 +52,9 @@ class SpsGameApplicationTests {
 
     @Test
     public void testInitMethod() {
-        String result = this.restTemplate.getForObject("http://localhost:" + port + "/api/init", String.class, Map.of("playerId", "12345"));
+        String result = this.restTemplate.getForObject("http://localhost:" + port + "/api/init?playerId=123456789", String.class);
         Assertions.assertThat(result).isNotNull();
-        Assert.isTrue(result.contains("gameId"), "Result must contain string gameId");
+        Assert.isTrue(result.contains("gameId"), "Result must contain string gameId: " + result);
     }
 
     @Test
@@ -70,5 +75,29 @@ class SpsGameApplicationTests {
         Assertions.assertThat(responseCode).isNotNull();
         Assertions.assertThat(responseCode.getBody()).isNotNull();
         Assert.isTrue(responseCode.getBody().toString().contains("winner"), "Response must contain string winner");
+    }
+
+    public static void main(String... args){
+        executeLoadTest();
+    }
+
+    private static void executeLoadTest() {
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest.newBuilder(URI.create("http://localhost:8080/api/init?playerId=3242332"))
+                .header("accept", "application/json")
+                .GET()
+                .build();
+        ExecutorService executor = Executors.newFixedThreadPool(20);
+        for (int i = 0; i < 100_000; i++) {
+            executor.execute(() -> {
+                try{
+                    client.send(request, HttpResponse.BodyHandlers.ofString());
+                    Thread.sleep(5);
+                } catch(Exception ex){
+                    System.out.println("Error executing test: " + ex.getMessage());// ignore sysout for standalone test
+                }
+            });
+        }
+        executor.shutdown();
     }
 }

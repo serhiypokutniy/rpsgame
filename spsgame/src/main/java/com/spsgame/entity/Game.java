@@ -33,6 +33,7 @@ public class Game {
                 player.setLastWonScore(player.getLastWonScore() + 1);
             }
             player.setTimesPlayed(player.getTimesPlayed() + 1);
+            player.setPlayedByAll(player.getPlayedByAll() == null ? 1 : (player.getPlayedByAll()) + 1);
         } else {
             computerChoice = null;
             winner = null;

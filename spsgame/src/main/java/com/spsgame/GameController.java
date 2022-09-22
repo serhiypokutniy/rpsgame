@@ -35,13 +35,12 @@ public class GameController {
     @Autowired
     private PlayerRepository playerRepository;
 
-    @GetMapping(path ="/init", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path ="init", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand(groupKey = HYSTRIX_GROUP)
-    @Timed(value = "player.details.fetch.time", description = "Time to fetch player details")
+    @Timed(value = "init.time", description = "Time for the initialization")
     public Game initGame(@RequestParam String playerId){
         return execute(() -> {
             Player player = findOrCreatePlayer(playerId);
-            updatePlayerStatsFromCache(player);
             return Game.from(player);
         });
     }
@@ -103,10 +102,6 @@ public class GameController {
         }
         Player player = playerRepository.findById(playerId)
                 .orElseGet(() -> playerRepository.save(Player.builder().playerId(playerId).lastUpdated(Instant.now()).build()));
-        return updatePlayerStatsFromCache(player);
-    }
-
-    private Player updatePlayerStatsFromCache(Player player){
         player.setPlayedByAll((Integer) redisTemplate.opsForValue().get(TOTAL_GAMES_CACHING_ID));
         player.setDistinctPlayers((Integer) redisTemplate.opsForValue().get(DISTINCT_PLAYERS_CACHING_ID));
         return player;
