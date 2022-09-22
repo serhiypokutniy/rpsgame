@@ -1,0 +1,36 @@
+version: '3.0'
+
+services:
+
+### Redis cache
+  cache:
+    image: redis:7.0.4
+    restart: always
+    ports:
+      - '16379:6379'
+    command: redis-server --requirepass "mypass"
+
+### Database:
+  postgres_db:
+    image: "postgres:14-alpine"
+    container_name: postgres
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=rps
+      - POSTGRES_PASSWORD=rps
+      - POSTGRES_DB=rps
+    volumes:
+      - ./postgres:/data
+      - ./postgres/db.sql:/docker-entrypoint-initdb.d/db.sql
+
+### Frontend
+#  frontend:
+#    container_name: frontend
+#    build: ./frontend
+#    volumes: # Volume binding
+#     - '../frontend:/usr/src/app' 
+#    ports: 
+#      - '4200:4200' 
+#    command: > 
+#        bash -c "npm install && ng serve --host 0.0.0.0 --port 4200"

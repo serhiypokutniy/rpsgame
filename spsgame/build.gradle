@@ -1,0 +1,50 @@
+plugins {
+    id 'org.springframework.boot' version '2.4.13'
+    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id 'java'
+}
+
+group = 'com.spsgame'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    //Base:
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    //Metrics:
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.3'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap:3.0.0'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix:2.2.10.RELEASE'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard:2.2.10.RELEASE'
+    //implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:3.1.4'
+    //implementation 'org.springframework.cloud:spring-cloud-dependencies:2021.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.7.3'
+    //Caching:
+    //implementation 'redis.clients:jedis:4.2.3'
+
+
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.postgresql:postgresql'
+    annotationProcessor 'org.projectlombok:lombok'
+    runtimeOnly 'org.springframework.cloud:spring-cloud-dependencies:2021.0.4'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
