@@ -1,7 +1,7 @@
 import {ErrorHandler, NgModule} from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import {AppComponent} from './app.component';
+import {GameComponent} from './components/game.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatCardModule} from "@angular/material/card";
 import {MatToolbarModule} from "@angular/material/toolbar";
@@ -20,7 +20,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   declarations: [
-    AppComponent,
+    GameComponent,
   ],
     imports: [
         BrowserModule,
@@ -39,6 +39,6 @@ import {MatTooltipModule} from "@angular/material/tooltip";
         MatTooltipModule
     ],
   providers: [CookieService, {provide: ErrorHandler, useClass: GlobalErrorHandler}],
-  bootstrap: [AppComponent]
+  bootstrap: [GameComponent]
 })
 export class AppModule { }

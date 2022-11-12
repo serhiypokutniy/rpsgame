@@ -3,13 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import {Title} from "@angular/platform-browser";
 import {CookieService} from 'ngx-cookie-service';
 import {v4 as uuidv4} from 'uuid';
-import {Game} from "./game.model";
 import {animate, state, style, transition, trigger} from "@angular/animations";
+import type { Game} from '../../generated'
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  templateUrl: './game.component.html',
+  styleUrls: ['./game.component.css'],
   animations: [
       trigger('fadeSlideInOut', [
           transition(':enter', [
@@ -27,7 +27,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
     ])
   ]
 })
-export class AppComponent {
+export class GameComponent {
 
   constructor(private http: HttpClient, private cookie: CookieService, private titleService:Title) {
     this.titleService.setTitle("Rock, Paper, Scissors Game");
@@ -80,7 +80,12 @@ export class AppComponent {
     params = params.set(this.PLAYER_CHOICE_PARAM, weapon);
     this.http.post<Game>(this.BACKEND_PATH_PLAY, null, {params: params})
       .subscribe((response => {
-        this.winner = response.winner;
+        this.winner = 'NEW';
+        if(response.playerWins == undefined){
+          this.winner = 'TIE';
+        } else {
+          this.winner = response.playerWins ? 'PLAYER' : 'COMPUTER';
+        }
         this.computerChoice = response.computerChoice;
         this.updateStatistics(response);
     }));
@@ -109,10 +114,10 @@ export class AppComponent {
   }
 
   private updateStatistics(response: Game): void {
-    this.scores.player = response.player.lastWonScore;
-    this.scores.computer = response.player.lastLostScore;
-    this.playedByAll = response.player.playedByAll;
-    this.playedByPlayer = response.player.timesPlayed;
-    this.totalPlayers = response.player.distinctPlayers;
+    this.scores.player = response.lastWonScore;
+    this.scores.computer = response.lastLostScore;
+    this.playedByAll = response.playedByAll;
+    this.playedByPlayer = response.timesPlayed;
+    this.totalPlayers = response.distinctPlayers;
   }
 }

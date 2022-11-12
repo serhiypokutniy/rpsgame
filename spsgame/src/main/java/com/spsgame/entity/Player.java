@@ -2,14 +2,17 @@ package com.spsgame.entity;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.Instant;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "player")
 public class Player {
@@ -29,10 +32,4 @@ public class Player {
 
     @Column(name = "last_lost_score", nullable = false)
     private int lastLostScore;
-
-    @Transient
-    private Integer distinctPlayers;
-
-    @Transient
-    private Integer playedByAll;
 }
