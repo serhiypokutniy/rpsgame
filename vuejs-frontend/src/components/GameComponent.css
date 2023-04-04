@@ -1,0 +1,74 @@
+@import "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css";
+
+h1 {
+    background-color: #3f51b5;
+    color: white;
+    font-size: xxx-large;
+    padding: 10px;
+    font-family: "Ink Free";
+}
+.main {
+    text-align: center;
+}
+.label{
+    font-size: large;
+    font-weight: bold;
+    padding: 5px;
+}
+.score {
+    background-color: #3f51b5;
+    padding: 10px;
+}
+.scoreboard {
+    margin-right: 10px;
+    cursor: text;
+    font-size: large;
+}
+.board{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: #3f51b5;
+    justify-content: space-evenly;
+    grid-gap: 10px;
+    padding: 10px;
+    -webkit-user-select:none;
+}
+.statistics{
+    color: white;
+    display:grid;
+    justify-content: space-evenly;
+    grid-template-columns: 1fr 1fr 1fr;
+    background-color: #3f51b5;
+    padding: 0px 10px 10px 10px;
+}
+.select-weapon-board {
+    padding: 0px 10px 10px 10px;
+    background-color: #3f51b5;
+}
+.select-weapon{
+    padding-left: 20px;
+    padding-right: 20px;
+    color: #3f51b5;
+    cursor:pointer;
+    -webkit-user-select:none;
+}
+.fa{
+    font-size:10em;
+}
+a.disabled {
+    pointer-events: none;
+}
+
+.slide-fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateX(20px);
+    opacity: 0;
+}

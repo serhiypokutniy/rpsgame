@@ -5,6 +5,7 @@ import com.spsgame.model.Game;
 import com.spsgame.entity.Player;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -24,6 +25,19 @@ public class GameService {
     public GameService(PlayerRepository playerRepository, RedisTemplate<Long, Object> redisTemplate){
         this.playerRepository = playerRepository;
         this.redisTemplate = redisTemplate;
+    }
+
+    /** Loads computationally intensive values to the cache. These values can later be read by the application. */
+    @Scheduled(initialDelay = 0, fixedDelay = 10_000)
+    public void fetchStatistics() {
+        try {
+            log.debug("Loading values to the cache");
+            redisTemplate.opsForValue().set(GameService.TOTAL_GAMES_CACHING_ID, playerRepository.sumTimesPlayed());
+            redisTemplate.opsForValue().set(GameService.DISTINCT_PLAYERS_CACHING_ID, playerRepository.count());
+        } catch(Exception ex){
+            log.error("Error fetching statistics caused by {}, the scheduling will be stopped", ex.getMessage(), ex);
+            throw new IllegalStateException(ex); // stop automatic execution
+        }
     }
 
     public Game init(String playerId){

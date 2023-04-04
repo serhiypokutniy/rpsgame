@@ -4,7 +4,10 @@ import {Title} from "@angular/platform-browser";
 import {CookieService} from 'ngx-cookie-service';
 import {v4 as uuidv4} from 'uuid';
 import {animate, state, style, transition, trigger} from "@angular/animations";
-import type { Game} from '../../generated'
+import type {Game} from '../../generated'
+import {environment} from "../../environments/environment.prod";
+import {constants} from "../constants";
+
 
 @Component({
   selector: 'app-root',
@@ -33,24 +36,9 @@ export class GameComponent {
     this.titleService.setTitle("Rock, Paper, Scissors Game");
     this.init();
   }
-  readonly BACKEND_PATH_PLAY = 'http://localhost:8080/api/play';
-  readonly BACKEND_PATH_RESET = 'http://localhost:8080/api/reset';
-  readonly BACKEND_PATH_INIT = 'http://localhost:8080/api/init';
-  readonly PLAYER_ID_PARAM = 'playerId';
-  readonly PLAYER_CHOICE_PARAM = 'playerChoice';
-  readonly NEW = 'NEW';
-  readonly WEAPONS = [
-    'PEACE',
-    'ROCK',
-    'PAPER',
-    'SCISSORS'
-  ];
-  readonly RESULTS = {
-    'NEW': 'Select your weapon',
-    'TIE': 'It is a tie, select your weapon for a new try',
-    'PLAYER': 'You win! Select your weapon for another new try',
-    'COMPUTER': 'You lose! Select your weapon for another try'
-  }
+  readonly NEW = constants.NEW;
+  readonly WEAPONS = constants.WEAPONS;
+  readonly RESULTS = constants.RESULTS;
   scores = {'computer' : 0, 'player' : 0}
   playerChoice = this.WEAPONS[0];
   computerChoice  = this.WEAPONS[0];
@@ -62,8 +50,8 @@ export class GameComponent {
   private init(): void {
     let sessionId = this.createSessionIdIfAbsent();
     let params = new HttpParams();
-    params = params.set(this.PLAYER_ID_PARAM, sessionId);
-    this.http.get<Game>(this.BACKEND_PATH_INIT, {params: params})
+    params = params.set(constants.PLAYER_ID_PARAM, sessionId);
+    this.http.get<Game>(environment.BACKEND_PATH_INIT, {params: params})
       .subscribe((response => {
         this.updateStatistics(response);
       }));
@@ -76,9 +64,10 @@ export class GameComponent {
     this.playerChoice = weapon;
     this.winner = null; //hide text for a new selection
     let params = new HttpParams();
-    params = params.set(this.PLAYER_ID_PARAM, sessionId);
-    params = params.set(this.PLAYER_CHOICE_PARAM, weapon);
-    this.http.post<Game>(this.BACKEND_PATH_PLAY, null, {params: params})
+
+    params = params.set(constants.PLAYER_ID_PARAM, sessionId);
+    params = params.set(constants.PLAYER_CHOICE_PARAM, weapon);
+    this.http.post<Game>(environment.BACKEND_PATH_PLAY, null, {params: params})
       .subscribe((response => {
         this.winner = 'NEW';
         if(response.playerWins == undefined){
@@ -94,8 +83,8 @@ export class GameComponent {
   reset(): void {
     let sessionId = this.createSessionIdIfAbsent();
     let params = new HttpParams();
-    params = params.set(this.PLAYER_ID_PARAM, sessionId);
-    this.http.post(this.BACKEND_PATH_RESET, null, {params: params})
+    params = params.set(constants.PLAYER_ID_PARAM, sessionId);
+    this.http.post(environment.BACKEND_PATH_RESET, null, {params: params})
       .subscribe(() => {
         this.scores.player = 0;
         this.scores.computer = 0;
@@ -105,10 +94,10 @@ export class GameComponent {
   // Auxiliary functions:
 
   private createSessionIdIfAbsent(): string {
-    let sessionId = this.cookie.get(this.PLAYER_ID_PARAM);
+    let sessionId = this.cookie.get(constants.PLAYER_ID_PARAM);
     if(!sessionId){
       sessionId = uuidv4();
-      this.cookie.set(this.PLAYER_ID_PARAM, sessionId);
+      this.cookie.set(constants.PLAYER_ID_PARAM, sessionId);
     }
     return sessionId;
   }
